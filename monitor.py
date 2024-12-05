@@ -99,23 +99,6 @@ if html_content:
         print("Required text not found on the page.")
         save_change_to_file(html_content)
         send_email()
-    else:
-        # Monitor for changes using hashing
-        current_hash = get_current_page_hash(html_content)
-        previous_hash = load_previous_hash()
-
-        # If this is the first change, save it and mark it
-        if previous_hash is None and not has_first_change_saved():
-            save_change_to_file(html_content)
-            save_current_hash(current_hash)
-            mark_first_change_saved()
-            send_email()
-            print("First change detected and saved.")
-        elif current_hash != previous_hash:
-            save_change_to_file(html_content)
-            save_current_hash(current_hash)
-            send_email()
-            print("Change detected and saved.")
         else:
             print("No changes detected.")
 else:
