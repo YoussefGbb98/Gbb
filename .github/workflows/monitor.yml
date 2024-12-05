@@ -14,28 +14,19 @@ jobs:
 
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4
+
       - name: Run monitor script
         run: python monitor.py
 
-      - name: Ensure saved_changes directory exists
-        run: |
-          mkdir -p saved_changes
-
       - name: Check for changes and commit
         run: |
-          # Check if there are any new HTML files in the saved_changes folder
           if [ "$(ls -A saved_changes/*.html 2>/dev/null)" ]; then
-            # Configure git
             git config --global user.name "GitHub Actions"
             git config --global user.email "actions@github.com"
-            
-            # Stage changes
             git add saved_changes/*.html
-            
-            # Commit changes if there are any
-            git commit -m "New webpage change detected" || echo "No changes to commit"
-            
-            # Push changes
+            git commit -m "New webpage change detected"
             git push
           else
             echo "No changes detected, skipping commit."
