@@ -16,12 +16,6 @@ smtp_port = 587
 smtp_user = 'youssefguerboub98@gmail.com'
 smtp_password = 'vunm mfak ymcd igcd'
 
-# File to store previous content hash
-hash_file = 'previous_hash.txt'
-
-# Flag to track if a change has been saved
-first_change_saved_flag = 'first_change_saved.txt'
-
 # Folder to save updated content
 output_folder = 'saved_changes'
 
@@ -63,33 +57,7 @@ def get_current_page():
     else:
         print(f"Error: Failed to fetch the page. Status code: {response.status_code}")
         return None
-
-# Calculate the hash of the HTML content
-def get_current_page_hash(html_content):
-    return hashlib.sha256(html_content.encode()).hexdigest()
-
-# Load the previously stored hash
-def load_previous_hash():
-    try:
-        with open(hash_file, 'r') as f:
-            return f.read().strip()
-    except FileNotFoundError:
-        return None
-
-# Save the current hash to the file
-def save_current_hash(current_hash):
-    with open(hash_file, 'w') as f:
-        f.write(current_hash)
-
-# Check if the first change has been saved
-def has_first_change_saved():
-    return os.path.exists(first_change_saved_flag)
-
-# Mark that the first change has been saved
-def mark_first_change_saved():
-    with open(first_change_saved_flag, 'w') as f:
-        f.write('Change saved')
-
+        
 # Main monitoring logic
 html_content = get_current_page()
 
