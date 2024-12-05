@@ -2,7 +2,7 @@ name: Website Monitor
 
 on:
   schedule:
-    - cron: '*/1 * * * *'  # This will run every minute
+    - cron: '*/1 * * * *'  # Run every minute
   workflow_dispatch:
 
 jobs:
@@ -30,4 +30,3 @@ jobs:
             git push
           else
             echo "No changes detected, skipping commit."
-          fi
