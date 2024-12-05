@@ -4,15 +4,15 @@ from email.mime.text import MIMEText
 import hashlib
 from bs4 import BeautifulSoup
 from datetime import datetime
-import os  # Import os module to check and create directories
+import os
 
 # Website to monitor
-url = 'https://www.islamweb.net/ar/fatwa/%D8%A7%D8%B3%D8%A3%D9%84-%D8%B9%D9%86-%D9%81%D8%AA%D9%88%D9%89'  # Replace with the actual URL
+url = 'https://www.islamweb.net/ar/fatwa/%D8%A7%D8%B3%D8%A3%D9%84-%D8%B9%D9%86-%D9%81%D8%AA%D9%88%D9%89'
 
 # Email details
 sender_email = 'youssefguerboub98@gmail.com'
 recipient_email = 'youssefguerboub98@gmail.com'
-smtp_server = 'smtp.gmail.com'  # e.g., for Gmail: smtp.gmail.com
+smtp_server = 'smtp.gmail.com'
 smtp_port = 587
 smtp_user = 'youssefguerboub98@gmail.com'
 smtp_password = '0680231300'
@@ -21,13 +21,14 @@ smtp_password = '0680231300'
 hash_file = 'previous_hash.txt'
 
 # Folder to save updated content
-output_folder = 'saved_changes'  # Create this folder in your repository
+output_folder = 'saved_changes'
 
 # CSS selector for the part of the page you want to monitor
-target_element_selector = 'div.right-nav.fatwalist #question'  # Adjust as needed
+target_element_selector = 'div.right-nav.fatwalist #question'  # Adjust to your specific target element
 
+# Function to send an email notification
 def send_email():
-    msg = MIMEText('The monitored section of the webpage has changed, and the new content has been saved.')
+    msg = MIMEText('The monitored section of the webpage has changed, and the new HTML content has been saved.')
     msg['Subject'] = 'Webpage Section Change Notification'
     msg['From'] = sender_email
     msg['To'] = recipient_email
@@ -37,65 +38,68 @@ def send_email():
         server.login(smtp_user, smtp_password)
         server.sendmail(sender_email, recipient_email, msg.as_string())
 
-
-
+# Save the HTML content to a file
 def save_change_to_file(content_html):
-    # Create the output folder if it doesn't exist
+    # Ensure the output folder exists
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    # Create the filename with timestamp
+    # Create the filename with a timestamp
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     filename = f'{output_folder}/change_{timestamp}.html'
     
-    # Save the HTML content to the file
+    # Save the content to the file
     with open(filename, 'w', encoding='utf-8') as f:
         f.write(content_html)
     print(f"Change saved to {filename}")
 
+# Get the current HTML section
 def get_current_section():
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
 
-    # Find the element using the CSS selector
+    # Select the target element
     target_element = soup.select_one(target_element_selector)
     if target_element:
-        return target_element.get_text(), target_element.prettify()
+        return target_element.prettify()  # Return the HTML content
     else:
         print(f"Error: Could not find element with selector {target_element_selector}")
-        return None, None
+        return None
 
-def get_current_section_hash(text_content):
-    return hashlib.sha256(text_content.encode()).hexdigest()
+# Calculate the hash of the HTML content
+def get_current_section_hash(html_content):
+    return hashlib.sha256(html_content.encode()).hexdigest()
 
+# Load the previously stored hash
 def load_previous_hash():
     try:
         with open(hash_file, 'r') as f:
             return f.read().strip()
     except FileNotFoundError:
-        return None  # If the file doesn't exist, return None
+        return None
 
+# Save the current hash to the file
 def save_current_hash(current_hash):
     with open(hash_file, 'w') as f:
         f.write(current_hash)
 
-# Check for changes in the target section
-text_content, html_content = get_current_section()
+# Main monitoring logic
+html_content = get_current_section()
 
-if text_content:
-    current_hash = get_current_section_hash(text_content)
+if html_content:
+    current_hash = get_current_section_hash(html_content)
     previous_hash = load_previous_hash()
 
-    # If previous hash is None (i.e., first run), save the current hash
+    # First run: save hash and skip saving file
     if previous_hash is None:
-        save_current_hash(current_hash)  # Save the hash for the first time
-        print("First run: Hash saved.")
+        save_current_hash(current_hash)
+        print("First run: Hash saved. No previous content to compare.")
     elif current_hash != previous_hash:
-        save_change_to_file(html_content)  # Save the change if it is different
-        save_current_hash(current_hash)  # Save the new hash
-        send_email()  # Send email notification
+        save_change_to_file(html_content)
+        save_current_hash(current_hash)
+        send_email()
         print("Change detected and saved.")
     else:
         print("No changes detected in the monitored section.")
 else:
-    print("Failed to retrieve or hash the target section.")
+    print("Failed to retrieve the target section.")
