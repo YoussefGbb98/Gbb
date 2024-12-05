@@ -4,6 +4,7 @@ from email.mime.text import MIMEText
 import hashlib
 from bs4 import BeautifulSoup
 from datetime import datetime
+import os  # Import os module to check and create directories
 
 # Website to monitor
 url = 'https://www.islamweb.net/ar/fatwa/%D8%A7%D8%B3%D8%A3%D9%84-%D8%B9%D9%86-%D9%81%D8%AA%D9%88%D9%89'  # Replace with the actual URL
@@ -62,12 +63,21 @@ def save_current_hash(current_hash):
     with open(hash_file, 'w') as f:
         f.write(current_hash)
 
+
 def save_change_to_file(content_html):
+    # Create the output folder if it doesn't exist
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    # Create the filename with timestamp
     timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     filename = f'{output_folder}/change_{timestamp}.html'
+    
+    # Save the HTML content to the file
     with open(filename, 'w', encoding='utf-8') as f:
         f.write(content_html)
     print(f"Change saved to {filename}")
+
 
 # Check for changes in the target section
 text_content, html_content = get_current_section()
