@@ -99,7 +99,7 @@ if html_content:
         print("Required text not found on the page.")
         save_change_to_file(html_content)
         send_email()
-        else:
-            print("No changes detected.")
+    else:
+        print("No changes detected.")
 else:
     print("Failed to retrieve the page.")
