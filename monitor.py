@@ -15,7 +15,7 @@ recipient_email = 'youssefguerboub98@gmail.com'
 smtp_server = 'smtp.gmail.com'
 smtp_port = 587
 smtp_user = 'youssefguerboub98@gmail.com'
-smtp_password = '0680231300'
+smtp_password = 'vunm mfak ymcd igcd'
 
 # File to store previous content hash
 hash_file = 'previous_hash.txt'
