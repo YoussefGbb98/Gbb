@@ -45,6 +45,7 @@ jobs:
             git push
           else
             echo "No changes detected, skipping commit."
+          fi
 
       # Optional: Notify on success or failure (example using echo)
       - name: Notify result
