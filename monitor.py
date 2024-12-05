@@ -5,7 +5,7 @@ from datetime import datetime
 import os
 
 # Website to monitor
-url = 'https://guyoussef.blogspot.com/'
+url = 'https://www.islamweb.net/en/index.php?page=ask'
 
 # Email details
 sender_email = 'youssefguerboub98@gmail.com'
