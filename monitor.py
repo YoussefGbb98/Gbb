@@ -20,6 +20,9 @@ smtp_password = '0680231300'
 # File to store previous content hash
 hash_file = 'previous_hash.txt'
 
+# Flag to track if a change has been saved
+first_change_saved_flag = 'first_change_saved.txt'
+
 # Folder to save updated content
 output_folder = 'saved_changes'
 
@@ -83,6 +86,15 @@ def save_current_hash(current_hash):
     with open(hash_file, 'w') as f:
         f.write(current_hash)
 
+# Check if the first change has been saved
+def has_first_change_saved():
+    return os.path.exists(first_change_saved_flag)
+
+# Mark that the first change has been saved
+def mark_first_change_saved():
+    with open(first_change_saved_flag, 'w') as f:
+        f.write('Change saved')
+
 # Main monitoring logic
 html_content = get_current_section()
 
@@ -90,16 +102,14 @@ if html_content:
     current_hash = get_current_section_hash(html_content)
     previous_hash = load_previous_hash()
 
-    # First run: save hash and skip saving file
-    if previous_hash is None:
-        save_current_hash(current_hash)
-        print("First run: Hash saved. No previous content to compare.")
-    elif current_hash != previous_hash:
+    # If this is the first change, save it and mark it
+    if previous_hash is None and not has_first_change_saved():
         save_change_to_file(html_content)
         save_current_hash(current_hash)
+        mark_first_change_saved()
         send_email()
-        print("Change detected and saved.")
+        print("First change detected and saved.")
     else:
-        print("No changes detected in the monitored section.")
+        print("No further changes detected or the first change has already been saved.")
 else:
     print("Failed to retrieve the target section.")
