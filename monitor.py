@@ -9,11 +9,11 @@ from datetime import datetime
 url = 'https://www.islamweb.net/ar/fatwa/%D8%A7%D8%B3%D8%A3%D9%84-%D8%B9%D9%86-%D9%81%D8%AA%D9%88%D9%89'  # Replace with the actual URL
 
 # Email details
-sender_email = 'youssefguerboub@gmail.com'
-recipient_email = 'youssefguerboub@gmail.com'
+sender_email = 'youssefguerboub98@gmail.com'
+recipient_email = 'youssefguerboub98@gmail.com'
 smtp_server = 'smtp.gmail.com'  # e.g., for Gmail: smtp.gmail.com
 smtp_port = 587
-smtp_user = 'youssefguerboub@gmail.com'
+smtp_user = 'youssefguerboub98@gmail.com'
 smtp_password = '0680231300'
 
 # File to store previous content hash
@@ -76,9 +76,9 @@ if text_content:
     previous_hash = load_previous_hash()
 
     if current_hash != previous_hash:
-        send_email()
         save_change_to_file(html_content)
         save_current_hash(current_hash)
+        send_email()
         print("Change detected and saved.")
     else:
         print("No changes detected in the monitored section.")
