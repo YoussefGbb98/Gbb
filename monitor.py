@@ -1,7 +1,6 @@
 import requests
 import smtplib
 from email.mime.text import MIMEText
-import hashlib
 from datetime import datetime
 import os
 
