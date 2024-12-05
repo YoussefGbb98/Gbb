@@ -3,8 +3,6 @@ name: Website Monitor
 on:
   schedule:
     - cron: '*/1 * * * *'  # Run every minute
-  workflow_dispatch:
-
 jobs:
   monitor:
     runs-on: ubuntu-latest
