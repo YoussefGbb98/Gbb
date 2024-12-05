@@ -25,6 +25,9 @@ first_change_saved_flag = 'first_change_saved.txt'
 # Folder to save updated content
 output_folder = 'saved_changes'
 
+# Text snippet to search for
+required_text = "Assalaamu Alaykum, the Fatwa centre in Islamweb apologizes for not being able to accept your question now. We have reached the maximum daily limit. Please try again later."
+
 # Function to send an email notification
 def send_email():
     msg = MIMEText('The monitored webpage has changed, and the new HTML content has been saved.')
@@ -91,22 +94,29 @@ def mark_first_change_saved():
 html_content = get_current_page()
 
 if html_content:
-    current_hash = get_current_page_hash(html_content)
-    previous_hash = load_previous_hash()
-
-    # If this is the first change, save it and mark it
-    if previous_hash is None and not has_first_change_saved():
+    # Check if the required text is absent
+    if required_text not in html_content:
+        print("Required text not found on the page.")
         save_change_to_file(html_content)
-        save_current_hash(current_hash)
-        mark_first_change_saved()
         send_email()
-        print("First change detected and saved.")
-    elif current_hash != previous_hash:
-        save_change_to_file(html_content)
-        save_current_hash(current_hash)
-        send_email()
-        print("Change detected and saved.")
     else:
-        print("No changes detected.")
+        # Monitor for changes using hashing
+        current_hash = get_current_page_hash(html_content)
+        previous_hash = load_previous_hash()
+
+        # If this is the first change, save it and mark it
+        if previous_hash is None and not has_first_change_saved():
+            save_change_to_file(html_content)
+            save_current_hash(current_hash)
+            mark_first_change_saved()
+            send_email()
+            print("First change detected and saved.")
+        elif current_hash != previous_hash:
+            save_change_to_file(html_content)
+            save_current_hash(current_hash)
+            send_email()
+            print("Change detected and saved.")
+        else:
+            print("No changes detected.")
 else:
     print("Failed to retrieve the page.")
