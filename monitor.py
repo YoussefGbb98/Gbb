@@ -2,7 +2,6 @@ import requests
 import smtplib
 from email.mime.text import MIMEText
 import hashlib
-from bs4 import BeautifulSoup
 from datetime import datetime
 import os
 
@@ -26,13 +25,10 @@ first_change_saved_flag = 'first_change_saved.txt'
 # Folder to save updated content
 output_folder = 'saved_changes'
 
-# CSS selector for the part of the page you want to monitor
-target_element_selector = 'div.right-nav.fatwalist #question'  # Adjust to your specific target element
-
 # Function to send an email notification
 def send_email():
-    msg = MIMEText('The monitored section of the webpage has changed, and the new HTML content has been saved.')
-    msg['Subject'] = 'Webpage Section Change Notification'
+    msg = MIMEText('The monitored webpage has changed, and the new HTML content has been saved.')
+    msg['Subject'] = 'Webpage Change Notification'
     msg['From'] = sender_email
     msg['To'] = recipient_email
 
@@ -56,21 +52,17 @@ def save_change_to_file(content_html):
         f.write(content_html)
     print(f"Change saved to {filename}")
 
-# Get the current HTML section
-def get_current_section():
+# Get the current HTML of the entire page
+def get_current_page():
     response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
-
-    # Select the target element
-    target_element = soup.select_one(target_element_selector)
-    if target_element:
-        return target_element.prettify()  # Return the HTML content
+    if response.status_code == 200:
+        return response.text  # Return the full page HTML content
     else:
-        print(f"Error: Could not find element with selector {target_element_selector}")
+        print(f"Error: Failed to fetch the page. Status code: {response.status_code}")
         return None
 
 # Calculate the hash of the HTML content
-def get_current_section_hash(html_content):
+def get_current_page_hash(html_content):
     return hashlib.sha256(html_content.encode()).hexdigest()
 
 # Load the previously stored hash
@@ -96,10 +88,10 @@ def mark_first_change_saved():
         f.write('Change saved')
 
 # Main monitoring logic
-html_content = get_current_section()
+html_content = get_current_page()
 
 if html_content:
-    current_hash = get_current_section_hash(html_content)
+    current_hash = get_current_page_hash(html_content)
     previous_hash = load_previous_hash()
 
     # If this is the first change, save it and mark it
@@ -109,7 +101,12 @@ if html_content:
         mark_first_change_saved()
         send_email()
         print("First change detected and saved.")
+    elif current_hash != previous_hash:
+        save_change_to_file(html_content)
+        save_current_hash(current_hash)
+        send_email()
+        print("Change detected and saved.")
     else:
-        print("No further changes detected or the first change has already been saved.")
+        print("No changes detected.")
 else:
-    print("Failed to retrieve the target section.")
+    print("Failed to retrieve the page.")
