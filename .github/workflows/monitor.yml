@@ -1,38 +1,50 @@
-name: Webpage Monitor
+name: Website Monitor
 
 on:
   schedule:
-    - cron: '* * * * *'  # This runs the action every minute.
-  workflow_dispatch:  # Allows manual triggering of the action.
+    - cron: '*/1 * * * *'  # Run every minute
 
 jobs:
-  monitor_webpage:
+  monitor:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      # Step 1: Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
+      # Step 2: Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'  # Specify your Python version
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install requests
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4
 
-    - name: Run webpage monitoring script
-      run: |
-        python monitor.py  # Replace with the actual name of your script file.
-      env:
-        SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}  # Use GitHub Secrets for sensitive data.
+      # Step 4: Ensure saved_changes directory exists
+      - name: Create saved_changes directory if not exists
+        run: mkdir -p saved_changes
 
-    - name: Commit and push changes if saved
-      run: |
-        git add saved_changes/*
-        git commit -m "Save updated content"
-        git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Step 5: Run monitor script
+      - name: Run monitor script
+        run: |
+          python monitor.py || { echo 'Error running monitor script'; exit 1; }
+
+      # Step 6: Check for changes and commit
+      - name: Check for changes and commit
+        run: |
+          # Check if there are any files in the saved_changes directory
+          if [ "$(ls -A saved_changes)" ]; then
+            git add saved_changes/*
+            git commit -m "Save updated content"
+            git push
+          else
+            echo "No changes to commit."
+          fi
+
+      # Optional: Notify on success or failure (example using echo)
+      - name: Notify result
+        run: echo "Monitoring completed successfully or failed above."
