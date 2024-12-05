@@ -37,6 +37,22 @@ def send_email():
         server.login(smtp_user, smtp_password)
         server.sendmail(sender_email, recipient_email, msg.as_string())
 
+
+
+def save_change_to_file(content_html):
+    # Create the output folder if it doesn't exist
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    # Create the filename with timestamp
+    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    filename = f'{output_folder}/change_{timestamp}.html'
+    
+    # Save the HTML content to the file
+    with open(filename, 'w', encoding='utf-8') as f:
+        f.write(content_html)
+    print(f"Change saved to {filename}")
+
 def get_current_section():
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -57,38 +73,27 @@ def load_previous_hash():
         with open(hash_file, 'r') as f:
             return f.read().strip()
     except FileNotFoundError:
-        return None
+        return None  # If the file doesn't exist, return None
 
 def save_current_hash(current_hash):
     with open(hash_file, 'w') as f:
         f.write(current_hash)
 
-
-def save_change_to_file(content_html):
-    # Create the output folder if it doesn't exist
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
-
-    # Create the filename with timestamp
-    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    filename = f'{output_folder}/change_{timestamp}.html'
-    
-    # Save the HTML content to the file
-    with open(filename, 'w', encoding='utf-8') as f:
-        f.write(content_html)
-    print(f"Change saved to {filename}")
-
-
 # Check for changes in the target section
 text_content, html_content = get_current_section()
+
 if text_content:
     current_hash = get_current_section_hash(text_content)
     previous_hash = load_previous_hash()
 
-    if current_hash != previous_hash:
-        save_change_to_file(html_content)
-        save_current_hash(current_hash)
-        send_email()
+    # If previous hash is None (i.e., first run), save the current hash
+    if previous_hash is None:
+        save_current_hash(current_hash)  # Save the hash for the first time
+        print("First run: Hash saved.")
+    elif current_hash != previous_hash:
+        save_change_to_file(html_content)  # Save the change if it is different
+        save_current_hash(current_hash)  # Save the new hash
+        send_email()  # Send email notification
         print("Change detected and saved.")
     else:
         print("No changes detected in the monitored section.")
