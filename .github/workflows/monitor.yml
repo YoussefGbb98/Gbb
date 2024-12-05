@@ -25,7 +25,7 @@ jobs:
 
     - name: Run webpage monitoring script
       run: |
-        python your_script.py  # Replace with the actual name of your script file.
+        python monitor.py  # Replace with the actual name of your script file.
       env:
         SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}  # Use GitHub Secrets for sensitive data.
 
